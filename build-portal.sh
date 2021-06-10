@@ -29,7 +29,8 @@ function buildPortal() {
   cd $portalPath
   git checkout ${portalBranch}
   gSyncBranch
-  # app.server.properties configurations here
+  clearAppServerProperties
+  createAppServerProperties
   aa
   esti $dir
   createPortalExt
@@ -38,6 +39,25 @@ function buildPortal() {
   failureMessage="Bundles creation failure!"
   
   existsDir $dir $successMessage $failureMessage
+}
+
+function clearAppServerProperties() {
+  user="$(whoami)"
+  dir=${PATH}/${portalVersion}
+
+  echo ""
+  echo "[Deleting app.server.${user}.properties]"
+  echo "App server path: ${PATH}/${portalVersion}"
+
+  successMessage="Deleted $dir/app.server.${user}.properties]"
+  failureMessage="App server does not exists!"
+
+  if [[ -f $dir/app.server.${user}.properties] ]] ; then
+    rm $dir/app.server.${user}.properties
+    echo "$successMessage"
+  else
+    echo "$failureMessage"
+  fi
 }
 
 function clearBundle() {
@@ -50,6 +70,23 @@ function clearBundle() {
   failureMessage="Bundles does not exists!"
 
   existsDir $dir $successMessage $failureMessage
+
+  if [ $? == 1 ] ; then
+    rm -rf $dir
+  fi
+}
+
+function createAppServerProperties() {
+  user="$(whoami)"
+
+  echo ""
+  echo "[Creating app.server.${user}.properties]"
+  echo "App server path: ${PATH}/${portalVersion}"
+
+  cp -R app.server.properties app.server.$user.properties
+  # adicionar a bundles-ee no arquivo app.server.$user
+
+  echo "App server was created!"
 }
 
 function createPortalExt() {
@@ -80,8 +117,10 @@ function esti() {
 function existsDir() {
   if [[ -d ${dir} ]]; then
     echo ${successMessage}
+    return 1
   else
     echo ${failureMessage}
+    return 0
   fi
 }
 
