@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PATH=/home/me/dev/projects
+PROJECTS_PATH=/home/me/dev/projects
 
 portalBranchs=(
   "master"
@@ -14,26 +14,59 @@ portalVersions=(
 )
 
 function aa() {
-  ant setup-profile-dxp && ant all
+  echo ""
+
+  echo "Executing: ant setup-profile-dxp"
+  echo ""
+  ant setup-profile-dxp
+
+  echo "Executing: ant all"
+  echo ""
+  ant all
 }
 
 function buildPortal() {
+  dir=${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}
+  portalPath=${PROJECTS_PATH}/${portalVersion}
+  
+  echo ""
+  echo "Go to: $portalPath"
+  cd $portalPath
+  
+  echo ""
+  echo "Run git checkout ${portalBranch}"
+  git checkout ${portalBranch}
+  
+  gSyncBranch
+
+  gStatus="$(git status --short)"
+  
+  if [[ ! -z $gStatus ]] ; then
+    echo "You have some modified files to resolve."
+    read -p "Do you want to checkout all? [Y/n]" string
+    
+    if [[ $string == "Y" || $string == "y" ]] ; then
+      echo ""
+      echo "Running git checkout . and git clean -f ."
+      git checkout .
+      git clean -f .
+    else
+      echo ""
+      echo "Resolve it and try again."
+      exit 1
+    fi
+  fi
+
+  #createAppServerProperties
+  
   echo ""
   echo "[Creating bundles]"
-
-  dir=${PATH}/bundles-${portalVersion}-${portalBranch}
-  portalPath=${PATH}/bundles-${portalVersion}
-
   echo "Bundles path: $dir"
-  
-  cd $portalPath
-  git checkout ${portalBranch}
-  gSyncBranch
-  clearAppServerProperties
-  createAppServerProperties
   aa
+  
   esti $dir
-  createPortalExt
+  
+  # createPortalExt $dir
   
   successMessage="Bundles creation success!"
   failureMessage="Bundles creation failure!"
@@ -43,11 +76,11 @@ function buildPortal() {
 
 function clearAppServerProperties() {
   user="$(whoami)"
-  dir=${PATH}/${portalVersion}
+  dir=${PROJECTS_PATH}/${portalVersion}
 
   echo ""
   echo "[Deleting app.server.${user}.properties]"
-  echo "App server path: ${PATH}/${portalVersion}"
+  echo "App server path: ${PROJECTS_PATH}/${portalVersion}"
 
   successMessage="Deleted $dir/app.server.${user}.properties]"
   failureMessage="App server does not exists!"
@@ -63,14 +96,15 @@ function clearAppServerProperties() {
 function clearBundle() {
   echo ""
   echo "[Deleting bundles]"
-  echo "Bundles path: ${PATH}/bundles-${portalVersion}-${portalBranch}"
+  echo "Bundles path: ${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}"
 
-  dir=${PATH}/bundles-${portalVersion}-${portalBranch}
-  successMessage="Deleted ${PATH}/bundles-${portalVersion}-${portalBranch}"
+  dir=${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}
+  successMessage="Deleted ${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}"
   failureMessage="Bundles does not exists!"
 
   existsDir $dir $successMessage $failureMessage
 
+  rm -rf ${PROJECTS_PATH}/bundles
   if [ $? == 1 ] ; then
     rm -rf $dir
   fi
@@ -81,7 +115,7 @@ function createAppServerProperties() {
 
   echo ""
   echo "[Creating app.server.${user}.properties]"
-  echo "App server path: ${PATH}/${portalVersion}"
+  echo "App server path: ${PROJECTS_PATH}/${portalVersion}"
 
   cp -R app.server.properties app.server.$user.properties
   # adicionar a bundles-ee no arquivo app.server.$user
@@ -92,10 +126,12 @@ function createAppServerProperties() {
 function createPortalExt() {
   cd $path
   if [[ -f portal-ext.properties ]] ; then
+    echo "Deleting portal-ext.properties"
     rm portal-ext.properties
-  else
-    echo "code portal-ext..." > portal-ext.properties
   fi
+  
+  echo "code portal-ext..." > portal-ext.properties
+  echo "Portal-ext.properties was created."
 }
 
 function esti() {
@@ -111,6 +147,8 @@ function esti() {
   if [[ -d $path/$tomcatName ]]; then
     echo "system.properties was created."
     cd $path/$tomcatName/webapps/ROOT/WEB-INF/classes && touch system-ext.properties && echo 'liferay.mode=test' > system-ext.properties
+  else
+    echo "$path/$tomcatName not found."
   fi
 }
 
@@ -166,15 +204,15 @@ selectLiferayPortalVersion
 # Select portal branch:
 selectLiferayPortalBranch
 
-# Clear bundles
-clearBundle
+if [[ "$1" == "aa" ]] ; then
+  cd $PATH/$portalVersion
+  
+  gSyncBranch
+  aa
+else
+  # Clear bundles
+  clearBundle
 
-# Build Portal
-buildPortal
-
-echo ""
-echo "Go to: ${PATH}/${portalVersion}"
-
-cd ${PATH}/$portalVersion 
-
-echo "Branch: ${portalBranch}"
+  # Build Portal
+  buildPortal
+fi
