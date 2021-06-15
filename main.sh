@@ -1,33 +1,28 @@
 #!/bin/bash
 
-if [ "$1" == "build" ] ; then
-  source build-portal.sh
+source build-portal.sh
+source config.sh
 
-  # Select portal version:
-  selectLiferayPortalVersion
+if [ "$PROJECTS_PATH" == "NULL" ] ; then
+  setProjectsPath
+fi
 
-  # Select portal branch:
-  selectLiferayPortalBranch
-
-  if [[ "$1" == "aa" ]] ; then
+if [[ "$1" == "aa" ]] ; then
     cd $PATH/$portalVersion
     
     gSyncBranch
     aa
-  else
-    # Clear bundles
-    clearBundle
-
-    # Build Portal
-    buildPortal
-  fi
-elif [[ "${1}" == "runPortal" ]] ; then
-  source build-portal.sh
-
-  # Select portal version:
+elif [ "$1" == "build" ] ; then
   selectLiferayPortalVersion
 
-  # Select portal branch:
+  selectLiferayPortalBranch
+  
+  clearBundle
+
+  buildPortal
+elif [[ "${1}" == "runPortal" ]] ; then
+  selectLiferayPortalVersion
+
   selectLiferayPortalBranch
 
   cd "$(find ${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch} -name 'bin' -type d)"
