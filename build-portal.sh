@@ -26,8 +26,9 @@ function aa() {
 }
 
 function buildPortal() {
-  dir=${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}
-  portalPath=${PROJECTS_PATH}/${portalVersion}
+  bundlesName="bundles-${portalVersion}-${portalBranch}"
+  bundlesPath="${PROJECTS_PATH}/$bundlesName"
+  portalPath="${PROJECTS_PATH}/${portalVersion}"
   
   echo ""
   echo "Go to: $portalPath"
@@ -37,6 +38,8 @@ function buildPortal() {
   echo "Run git checkout ${portalBranch}"
   git checkout ${portalBranch}
   
+  gitClean
+
   gSyncBranch
 
   gStatus="$(git status --short)"
@@ -57,36 +60,37 @@ function buildPortal() {
     fi
   fi
 
-  #createAppServerProperties
+  clearAppServerProperties
+  createAppServerProperties
   
   echo ""
   echo "[Creating bundles]"
-  echo "Bundles path: $dir"
+  echo "Bundles path: $bundlesPath"
   aa
   
-  esti $dir
+  esti $bundlesPath
   
-  # createPortalExt $dir
+  # createPortalExt $bundlesPath
   
   successMessage="Bundles creation success!"
   failureMessage="Bundles creation failure!"
   
-  existsDir $dir $successMessage $failureMessage
+  existsDir $bundlesPath $successMessage $failureMessage
 }
 
 function clearAppServerProperties() {
   user="$(whoami)"
-  dir=${PROJECTS_PATH}/${portalVersion}
+  appServerPath=${PROJECTS_PATH}/${portalVersion}
 
   echo ""
   echo "[Deleting app.server.${user}.properties]"
-  echo "App server path: ${PROJECTS_PATH}/${portalVersion}"
+  echo "App server path: $appServerPath"
 
-  successMessage="Deleted $dir/app.server.${user}.properties]"
+  successMessage="Deleted app.server.${user}.properties]"
   failureMessage="App server does not exists!"
 
-  if [[ -f $dir/app.server.${user}.properties] ]] ; then
-    rm $dir/app.server.${user}.properties
+  if [[ -f app.server.${user}.properties] ]] ; then
+    rm app.server.${user}.properties
     echo "$successMessage"
   else
     echo "$failureMessage"
@@ -98,7 +102,6 @@ function clearBundle() {
   echo "[Deleting bundles]"
   echo "Bundles path: ${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}"
 
-  dir=${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}
   successMessage="Deleted ${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch}"
   failureMessage="Bundles does not exists!"
 
@@ -118,7 +121,8 @@ function createAppServerProperties() {
   echo "App server path: ${PROJECTS_PATH}/${portalVersion}"
 
   cp -R app.server.properties app.server.$user.properties
-  # adicionar a bundles-ee no arquivo app.server.$user
+
+  sed -i "s/bundles/$bundlesName/g" app.server.$user.properties
 
   echo "App server was created!"
 }
@@ -137,29 +141,40 @@ function createPortalExt() {
 function esti() {
   echo ""
 
-  tomcatName="$(find $path -name 'tomcat-*')"
-  
+  tomcatPath="$(find $bundlesPath -name 'bin' -type d)"
+
   successMessage="Tomcat exists."
   failureMessage="Tomcat not found."
 
-  existsDir $path/$tomcatName $successMessage $failureMessage
+  existsDir $tomcatPath $successMessage $failureMessage
 
-  if [[ -d $path/$tomcatName ]]; then
+  echo ""
+  echo "Tomcat path: ${tomcatPath}"
+
+  if [[ -d $tomcatPath ]]; then
     echo "system.properties was created."
-    cd $path/$tomcatName/webapps/ROOT/WEB-INF/classes && touch system-ext.properties && echo 'liferay.mode=test' > system-ext.properties
+    cd $tomcatPath && cd .. && cd webapps/ROOT/WEB-INF/classes && touch system-ext.properties && echo 'liferay.mode=test' > system-ext.properties
   else
-    echo "$path/$tomcatName not found."
+    echo "$tomcatPath not found."
   fi
 }
 
 function existsDir() {
-  if [[ -d ${dir} ]]; then
+  if [[ -d ${1} ]] ; then
     echo ${successMessage}
-    return 1
+    return 0
   else
     echo ${failureMessage}
-    return 0
+    return 1
   fi
+}
+
+function gitClean() {
+  user="$(whoami)"
+
+  echo ""
+  echo "Run git clean -dfx"
+  git clean -dfx -e build.$user.properties -e app.server.$user.properties -e portal-ext.properties -e release.$user.properties -e portal-test-ext.properties -e .project -e .classpath -e .iml
 }
 
 function gSyncBranch() {
@@ -197,22 +212,3 @@ function selectLiferayPortalVersion() {
       break
   done
 }
-
-# Select portal version:
-selectLiferayPortalVersion
-
-# Select portal branch:
-selectLiferayPortalBranch
-
-if [[ "$1" == "aa" ]] ; then
-  cd $PATH/$portalVersion
-  
-  gSyncBranch
-  aa
-else
-  # Clear bundles
-  clearBundle
-
-  # Build Portal
-  buildPortal
-fi
