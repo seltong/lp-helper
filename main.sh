@@ -20,6 +20,8 @@ elif [ "$1" == "build" ] ; then
   clearBundle
 
   buildPortal
+elif [ "${1}" == "help" ] ; then
+  help
 elif [[ "${1}" == "runPortal" ]] ; then
   selectLiferayPortalVersion
 
@@ -27,4 +29,6 @@ elif [[ "${1}" == "runPortal" ]] ; then
 
   cd "$(find ${PROJECTS_PATH}/bundles-${portalVersion}-${portalBranch} -name 'bin' -type d)"
   ./catalina.sh run
+else
+  echo "Command not found. Try: ./main.sh help"
 fi

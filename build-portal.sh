@@ -187,6 +187,20 @@ function gSyncBranch() {
   echo "Origin $portalBranch was updated."
 }
 
+function help() {
+  echo ""
+
+  echo "usage: ./main.sh COMMAND"
+  echo ""
+
+  echo "List of Commands:"
+  echo ""
+
+  echo "build             Build the Liferay Portal"
+  echo "help              Display a helpful usage message"
+  echo "runPortal         Run the Liferay Portal"
+}
+
 function selectLiferayPortalBranch() {
   echo ""
 
