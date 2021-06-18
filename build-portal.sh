@@ -141,7 +141,7 @@ function createPortalExt() {
 function esti() {
   echo ""
 
-  tomcatPath="$(find $bundlesPath -name 'bin' -type d)"
+  tomcatPath="$(find $bundlesPath -name 'tomcat-[0-9]*\.[0-9]*\.[0-9]*' -type d)"
 
   successMessage="Tomcat exists."
   failureMessage="Tomcat not found."
@@ -153,7 +153,7 @@ function esti() {
 
   if [[ -d $tomcatPath ]]; then
     echo "system.properties was created."
-    cd $tomcatPath && cd .. && cd webapps/ROOT/WEB-INF/classes && touch system-ext.properties && echo 'liferay.mode=test' > system-ext.properties
+    cd $tomcatPath && cd webapps/ROOT/WEB-INF/classes && touch system-ext.properties && echo 'liferay.mode=test' > system-ext.properties
   else
     echo "$tomcatPath not found."
   fi
