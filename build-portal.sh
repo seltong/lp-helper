@@ -72,7 +72,7 @@ function buildPortal() {
   
   esti $bundlesPath
   
-  # createPortalExt $bundlesPath
+  createPortalExt $bundlesPath
   
   successMessage="Bundles creation success!"
   failureMessage="Bundles creation failure!"
@@ -131,12 +131,92 @@ function createAppServerProperties() {
 
 function createPortalExt() {
   cd $path
+  
   if [[ -f portal-ext.properties ]] ; then
     echo "Deleting portal-ext.properties"
     rm portal-ext.properties
   fi
   
-  echo "code portal-ext..." > portal-ext.properties
+  echo "module.framework.properties.osgi.console=localhost:11311
+        company.security.strangers.verify=false
+        terms.of.use.required=false
+        admin.email.from.address=test@liferay.com
+        admin.email.from.name=Test Test
+        company.default.locale=en_US
+        company.default.time.zone=UTC
+        company.default.web.id=liferay.com
+        default.admin.email.address.prefix=test
+        setup.wizard.enabled=false
+        index.on.startup=true
+        mail.session.jndi.name=
+        axis.servlet.hosts.allowed=
+        tunnel.servlet.hosts.allowed=
+        theme.css.fast.load=true
+        theme.images.fast.load=true
+        javascript.fast.load=false
+        layout.template.cache.enabled=false
+        combo.check.timestamp=true
+        freemarker.engine.cache.storage=soft:1
+        freemarker.engine.modification.check.interval=0
+        minifier.enabled=false
+        com.liferay.portal.servlet.filters.cache.CacheFilter=false
+        com.liferay.portal.servlet.filters.etag.ETagFilter=false
+        com.liferay.portal.servlet.filters.header.HeaderFilter=false
+        com.liferay.portal.servlet.filters.themepreview.ThemePreviewFilter=true
+        users.reminder.queries.enabled=false
+        users.reminder.queries.custom.question.enabled=false
+        ##
+        ## Monitoring
+        ##
+            #
+            # Configure the appropriate level for monitoring Liferay.
+            # Valid values are: HIGH, LOW, MEDIUM, OFF.
+            #
+            monitoring.level.com.liferay.monitoring.Portal=HIGH
+            monitoring.level.com.liferay.monitoring.Portlet=HIGH
+            #
+            # Set this to true to monitor portal requests.
+            #
+            monitoring.portal.request=true
+            #
+            # Set this to true to monitor portlet action requests.
+            #
+            monitoring.portlet.action.request=true
+            #
+            # Set this to true to monitor portlet event requests.
+            #
+            monitoring.portlet.event.request=true
+            #
+            # Set this to true to monitor portlet render requests.
+            #
+            monitoring.portlet.render.request=true
+            #
+            # Set this to true to monitor portlet resource requests.
+            #
+            monitoring.portlet.resource.request=true
+            #
+            # Set this to true to show data samples at the bottom of each portal page
+            # as HTML comment. In order for data to show, the property
+            # \"monitoring.data.sample.thread.local\" must be set to true.
+            #
+            monitoring.show.per.request.data.sample=true
+            #
+            # Set the date format used for storing dates as text in the index.
+            #
+            #index.date.format.pattern=YYYY-MM-DDThh:mm:ssZ
+                #
+            # Set how often index updates will be committed. Set the batch size to
+            # configure how many consecutive updates will trigger a commit. If the value
+            # is 0, then the index will be committed on every update. Set the time
+            # interval in milliseconds to configure how often to commit the index. The
+            # time interval is not read unless the batch size is greater than 0 because
+            # the time interval works in conjunction with the batch size to guarantee
+            # that the index is committed after a specified time interval. Set the time
+            # interval to 0 to disable committing the index by a time interval.
+            #
+            lucene.commit.batch.size=1
+            lucene.commit.time.interval=1" > portal-ext.properties
+
   echo "Portal-ext.properties was created."
 }
 
