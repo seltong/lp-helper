@@ -1,11 +1,13 @@
 #!/bin/bash
 
-PROJECTS_PATH=/home/me/dev/projects
+PROJECTS_PATH=NULL
 
 portalBranchs=(
   "master"
   "7.3.x"
   "7.2.x"
+  "7.1.x"
+  "7.0.x"
 )
 
 portalVersions=(
